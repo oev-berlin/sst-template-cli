@@ -1,0 +1,32 @@
+{
+  "name": "sst-template",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Richard Frost",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/inquirer": "9.0.7",
+    "@types/node": "20.8.5",
+    "@typescript-eslint/eslint-plugin": "6.12.0",
+    "@typescript-eslint/parser": "6.12.0",
+    "eslint": "8.54.0",
+    "prettier": "3.1.0",
+    "typescript": "5.2.2"
+  },
+  "dependencies": {
+    "chalk": "5.3.0",
+    "inquirer": "9.2.12",
+    "ora": "7.0.1",
+    "tsup": "8.0.1",
+    "zod": "3.22.4"
+  }
+}
