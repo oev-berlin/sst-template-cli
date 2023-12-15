@@ -18,22 +18,10 @@ export async function exists(filePath: string): Promise<boolean> {
   }
 }
 
-// Returns true if filePath is an empty directory.
-// Returns false otherwise.
-export async function isEmptyDir(filePath: string): Promise<boolean> {
-  try {
-    const files = await fs.readdir(filePath);
-    return !files.length;
-  } catch (error) {
-    return false;
-  }
-}
-
 export const copyFilesToDestination = async (destination: string, source: string) => {
   for await (const file of await getAllFiles(source)) {
     const absoluteDestination = path.join(destination, path.relative(source, file));
     await fs.mkdir(path.dirname(absoluteDestination), { recursive: true });
-
     await fs.copyFile(file, absoluteDestination);
     // const contents = await fs.readFile(relativeDestination, 'utf8');
     // await fs.writeFile(relativeDestination, contents.replace('<app-name>', appName));

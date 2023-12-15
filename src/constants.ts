@@ -38,16 +38,6 @@ const QUESTION_NEXT_TEMPLATE: QuestionCollection = {
   },
 };
 
-export const QUESTION_PROCEED_EXISTING_DIR: QuestionCollection = {
-  type: 'list',
-  name: 'proceed',
-  message: "An empty directory with your project's name already exists. Do you want to proceed?",
-  choices: [
-    { name: chalk.green('YES'), value: true },
-    { name: chalk.red('NO'), value: false },
-  ],
-};
-
 export const QUESTIONS = [QUESTION_PROJECT_NAME, QUESTION_FRAMEWORK, QUESTION_NEXT_TEMPLATE];
 export const SST_PRESET_PATH = './src/presets/base-sst';
 export const BASE_PRESET_PATH = './src/presets';
@@ -57,5 +47,5 @@ export const BASE_BACKEND_PATH = './packages/backend';
 export const REPLACE_FILES = ['package.json', 'sst.config.ts'];
 
 export const ERR_MSG_EXISTING_DIR =
-  'Error: There exists a non-empty directory or a file with the name of your project.';
+  'Error: There exists a directory or a file with the name of your project.';
 export const ERR_MSG_USER_ABORT = 'Project creation aborted.';
