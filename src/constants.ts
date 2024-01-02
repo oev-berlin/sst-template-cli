@@ -5,6 +5,12 @@ const QUESTION_PROJECT_NAME: Question = {
   type: 'input',
   name: 'name',
   message: 'What is the name of the project?',
+  validate: (input) => {
+    return (
+      /^(?!-)[a-zA-Z0-9-]+[a-zA-Z0-9]$/.test(input) ||
+      'Project name must have the structure aA0-bB1-...-cC2'
+    );
+  },
 };
 
 const QUESTION_FRAMEWORK: QuestionCollection = {
@@ -14,8 +20,8 @@ const QUESTION_FRAMEWORK: QuestionCollection = {
   choices: [
     { name: chalk.cyan('Next'), value: 'next' },
     { name: chalk.yellow('Astro'), value: 'astro' },
-    { name: chalk.green('Vue'), value: 'vue' },
-    { name: chalk.blue('React'), value: 'react' },
+    { name: chalk.green('Vue'), value: 'vue', disabled: 'currently not available' },
+    { name: chalk.blue('React'), value: 'react', disabled: 'currently not available' },
   ],
 };
 
@@ -24,7 +30,7 @@ const QUESTION_NEXT_TEMPLATE: QuestionCollection = {
   name: 'template',
   message: 'Which Template do you want to use?',
   choices: [
-    { name: chalk.yellow('OEV'), value: 'oev' },
+    { name: chalk.yellow('OEV'), value: 'oev', disabled: 'currently not available' },
     { name: chalk.cyan('Default'), value: 'default' },
   ],
   when: function (answers) {
@@ -33,9 +39,13 @@ const QUESTION_NEXT_TEMPLATE: QuestionCollection = {
 };
 
 export const QUESTIONS = [QUESTION_PROJECT_NAME, QUESTION_FRAMEWORK, QUESTION_NEXT_TEMPLATE];
-export const SST_PRESET = 'src/presets/base-sst';
-export const BASE_PRESET = 'src/presets';
+export const SST_PRESET_PATH = './src/presets/base-sst';
+export const BASE_PRESET_PATH = './src/presets';
 
-export const BASE_FRONTEND = 'packages/frontend';
-export const BASE_BACKEND = 'packages/backend';
+export const BASE_FRONTEND_PATH = './packages/frontend';
+export const BASE_BACKEND_PATH = './packages/backend';
 export const REPLACE_FILES = ['package.json', 'sst.config.ts'];
+
+export const ERR_MSG_EXISTING_DIR =
+  'Error: There exists a directory or a file with the name of your project.';
+export const ERR_MSG_USER_ABORT = 'Project creation aborted.';

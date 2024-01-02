@@ -1,55 +1,70 @@
 import inquirer, { Answers } from 'inquirer';
-import { BASE_FRONTEND, BASE_PRESET, QUESTIONS, SST_PRESET } from './constants.js';
+import {
+  BASE_FRONTEND_PATH,
+  BASE_PRESET_PATH,
+  ERR_MSG_EXISTING_DIR,
+  ERR_MSG_USER_ABORT,
+  QUESTIONS,
+  SST_PRESET_PATH,
+} from './constants.js';
 import ora from 'ora';
 import fs from 'fs/promises';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import { copyFilesToDestination, exists } from './util/fsUtils.js';
+
+const moduleBasePath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export const main = async () => {
   const { name, framework, template }: Answers = await inquirer.prompt(QUESTIONS);
+  const spinner = ora(`Setting up your ${framework}-Project: ${name}`).start();
+  const newProjectBase = path.join(process.cwd(), name);
 
-  const spinner = ora(`Setup your ${framework} Project: ${name}`).start();
-  const destination = await createBaseSSTProject(name);
+  if (await exists(newProjectBase)) {
+    spinner.fail(ERR_MSG_EXISTING_DIR);
+    process.exit(1);
+  }
 
-  await createFrameworkProject(destination, framework, template);
-  spinner.succeed();
-};
-
-const getAllFiles = async (dir: string): Promise<string[]> => {
-  if (dir.endsWith('node_modules')) return [];
-  const results = [];
-  for await (const file of await fs.opendir(dir)) {
-    const filePath = path.join(dir, file.name);
-    if (file.isDirectory()) {
-      results.push(...(await getAllFiles(filePath)));
-    } else {
-      results.push(filePath);
+  try {
+    await createBaseSSTProject(newProjectBase);
+    await createFrameworkProject(newProjectBase, framework, template);
+  } catch (e) {
+    let msg = 'An unknown error occured.';
+    switch ((e as Error).message) {
+      case 'Canceled by user.':
+        // This is currently never thrown, but it might in the future.
+        msg = ERR_MSG_USER_ABORT;
+        break;
     }
+    process.env.DEBUG && console.log('\n', e);
+    spinner.info('Cleaning up temporary files.');
+    // This could potentially thwrow again, but we just assume it does not.
+    if (await exists(newProjectBase)) await fs.rm(newProjectBase, { recursive: true });
+
+    spinner.fail(msg);
+    process.exit(1);
   }
-  return results;
+  spinner.succeed(`Your new project '${name}' is ready to go!`);
 };
 
-const copyFilesToDestination = async (destination: string, preset: string) => {
-  for await (const file of await getAllFiles(preset)) {
-    const relativeDestination = path.join(destination, path.relative(preset, file));
-    await fs.mkdir(path.dirname(relativeDestination), { recursive: true });
-    await fs.copyFile(file, relativeDestination);
-    // const contents = await fs.readFile(relativeDestination, 'utf8');
-    // await fs.writeFile(relativeDestination, contents.replace('<app-name>', appName));
-  }
+const createBaseSSTProject = async (newProjectBase: string) => {
+  const sstPresetSource = path.join(moduleBasePath, SST_PRESET_PATH);
+
+  await copyFilesToDestination(newProjectBase, sstPresetSource);
 };
 
-const createBaseSSTProject = async (appName: string) => {
-  const destination = path.join(process.cwd(), appName);
-  const preset = path.resolve(SST_PRESET);
+const createFrameworkProject = async (
+  newProjectBase: string,
+  framework: string,
+  template?: string
+) => {
+  const destination = path.join(newProjectBase, BASE_FRONTEND_PATH);
+  const frameworkPresetSource = path.join(
+    moduleBasePath,
+    BASE_PRESET_PATH,
+    framework,
+    template || ''
+  );
 
-  await copyFilesToDestination(destination, preset);
-
-  return destination;
-};
-
-const createFrameworkProject = async (baseDir: string, framework: string, template?: string) => {
-  const destination = path.join(baseDir, BASE_FRONTEND);
-  const preset = path.resolve(`${BASE_PRESET}/${framework}/${template}`);
-
-  await copyFilesToDestination(destination, preset);
+  await copyFilesToDestination(destination, frameworkPresetSource);
 };
